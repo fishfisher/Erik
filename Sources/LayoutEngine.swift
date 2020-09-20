@@ -36,7 +36,7 @@ public protocol URLBrowser {
     
     var url: URL? {get}
     var title: String? {get}
-    func currentContent(completionHandler: CompletionHandler?)
+    func currentContent(delay: TimeInterval, completionHandler: CompletionHandler?)
     
     func goBack()
     func goForward()
