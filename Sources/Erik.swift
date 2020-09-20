@@ -95,8 +95,8 @@ open class Erik {
     }
 
     // Get current content
-    open func currentContent(completionHandler: DocumentCompletionHandler?) {
-        layoutEngine.currentContent {[unowned self] (object, error) -> Void in
+    open func currentContent(delay: TimeInterval = 0.0, completionHandler: DocumentCompletionHandler?) {
+        layoutEngine.currentContent(delay: delay) {[unowned self] (object, error) -> Void in
             self.publish(content: object, error: error, completionHandler: completionHandler)
         }
     }
@@ -188,8 +188,8 @@ extension Erik {
         return Erik.sharedInstance.title
     }
 
-    public static func currentContent(completionHandler: DocumentCompletionHandler?) {
-        Erik.sharedInstance.currentContent(completionHandler: completionHandler)
+    public static func currentContent(delay: TimeInterval = 0.0, completionHandler: DocumentCompletionHandler?) {
+        Erik.sharedInstance.currentContent(delay: delay, completionHandler: completionHandler)
     }
     
     public static func evaluate(javaScript: String, completionHandler: CompletionHandler?) {

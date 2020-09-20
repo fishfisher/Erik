@@ -316,6 +316,7 @@ open class Element: Node {
     }
 
     func evaluate(javaScript: String, completionHandler: CompletionHandler? = nil) {
+        print("*** evaluate ***\n\(javaScript)\n*** evaluate end ***")
         layoutEngine?.evaluate(javaScript: javaScript, completionHandler: completionHandler)
     }
 

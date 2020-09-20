@@ -86,7 +86,7 @@ open class WebKitLayoutEngine: NSObject, LayoutEngine {
             case .navigationDelegate:
                 return { engine in
                     if let delegate = engine.navigable {
-                        assert(engine.navigable as? WKNavigationDelegate === engine.webView.navigationDelegate)
+                        DispatchQueue.main.sync { assert(engine.navigable as? WKNavigationDelegate === engine.webView.navigationDelegate) }
                         return delegate.navigate
                     }
                     assertionFailure("No navigation deletage found")
@@ -243,7 +243,7 @@ extension WebKitLayoutEngine {
         self.webView.reload()
     }
 
-    public func currentContent(completionHandler: CompletionHandler?) {
+    public func currentContent(delay: TimeInterval = 0.0, completionHandler: CompletionHandler?) {
         waitLoadingQueue.async { [unowned self] in
             self.handleLoadRequestCompletion { error in
                 if let error = error  {
@@ -251,7 +251,7 @@ extension WebKitLayoutEngine {
                         completionHandler?(nil, error)
                     }
                 } else {
-                    self.handleHTML(completionHandler)
+                    self.handleHTML(delay: delay, completionHandler: completionHandler)
                 }
             }
         }
@@ -273,14 +273,16 @@ extension WebKitLayoutEngine {
         completionHandler(nil)
     }
     
-    fileprivate func handleHTML(_ completionHandler: CompletionHandler?) {
+    fileprivate func handleHTML(delay: TimeInterval = 0.0, completionHandler: CompletionHandler?) {
         javaScriptQueue.async { [unowned self] in
-         
-            self.webView.evaluateJavaScript(self.javascriptToGetContent.javascript) { [unowned self] (obj, error) -> Void in
-                self.javaScriptQueue.async {
-                    completionHandler?(obj, error)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                self.webView.evaluateJavaScript(self.javascriptToGetContent.javascript) { [unowned self] (obj, error) -> Void in
+                    self.javaScriptQueue.async {
+                        completionHandler?(obj, error)
+                    }
                 }
             }
+            
         }
     }
     
