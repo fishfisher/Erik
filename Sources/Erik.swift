@@ -24,7 +24,21 @@ SOFTWARE.
 import Foundation
 import WebKit
 
-public typealias DocumentCompletionHandler = ((Document?, Error?) -> Void)
+// Return completion
+public struct DocumentCompletionReturn {
+   
+    public let document : Document?
+    public let rawHTML : String?
+    public let error : Error?
+    
+    internal init(document: Document? = nil, rawHTML: String? = nil, error: Error?) {
+        self.document = document
+        self.rawHTML = rawHTML
+        self.error = error
+    }
+}
+
+public typealias DocumentCompletionHandler = ((DocumentCompletionReturn) -> Void)
 
 // MARK: Error
 public enum ErikError: Error {
@@ -83,7 +97,7 @@ open class Erik {
         if let url = URL(string: urlString) {
             visit(url: url, completionHandler: completionHandler)
         } else {
-            completionHandler?(nil, ErikError.invalidURL(urlString: urlString))
+            completionHandler?(DocumentCompletionReturn(error: ErikError.invalidURL(urlString: urlString)))
         }
     }
     
@@ -129,26 +143,26 @@ open class Erik {
     // MARK: private
     fileprivate func publish(content: Any?, error: Error?, completionHandler: DocumentCompletionHandler?) {
         guard let html = content as? String else {
-            completionHandler?(nil, ErikError.noContent)
+            completionHandler?(DocumentCompletionReturn(error: ErikError.noContent))
             return
         }
         
         if let pattern = noContentPattern , html.range(of: pattern, options: .regularExpression) != nil {
-            completionHandler?(nil, ErikError.noContent)
+            completionHandler?(DocumentCompletionReturn(error: ErikError.noContent))
             return
         }
 
         guard error == nil else {
-            completionHandler?(nil, error)
+            completionHandler?(DocumentCompletionReturn(error: error))
             return
         }
         
         do {
             let doc = try self.htmlParser.parse(html, encoding: encoding)
             doc.layoutEngine = layoutEngine
-            completionHandler?(doc, error)
+            completionHandler?(DocumentCompletionReturn(document: doc, rawHTML: html, error: error))
         } catch {
-            completionHandler?(nil, ErikError.htmlNotParsable(html: html, error: error))
+            completionHandler?(DocumentCompletionReturn(error: ErikError.htmlNotParsable(html: html, error: error)))
         }
     }
 

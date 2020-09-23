@@ -35,11 +35,11 @@ extension Erik {
     public func visitFuture(url: URL) -> Future<Document, FutureError> {
         let promise = Promise<Document, FutureError>()
         
-        self.visit(url: url) { (obj, err) -> Void in
-            if let document = obj {
+        self.visit(url: url) { (result) -> Void in
+            if let document = result.document {
                 promise.success(document)
             }
-            else if let error = err {
+            else if let error = result.error {
                 promise.failure(Erik.toFutureError(error))
             }
         }
@@ -50,11 +50,11 @@ extension Erik {
     public func currentContentFuture() -> Future<Document, FutureError> {
         let promise = Promise<Document, FutureError>()
         
-        self.currentContent { (obj, err) -> Void in
-            if let document = obj {
+        self.currentContent { (result) -> Void in
+            if let document = result.document {
                 promise.success(document)
             }
-            else if let error = err {
+            else if let error = result.error {
                 promise.failure(Erik.toFutureError(error))
             }
         }
