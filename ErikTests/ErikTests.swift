@@ -38,13 +38,13 @@ class ErikTests: XCTestCase {
         
         let visitExpectation = self.expectation(description: "visit")
         
-        Erik.visit(url: url) { (obj, err) -> Void in
-            if let error = err {
+        Erik.visit(url: url) { (document) -> Void in
+            if let error = document.error {
                 print(error)
                 
                 XCTFail("\(error)")
             }
-            else if let _ = obj {
+            else if let _ = document.document {
                 XCTAssertNotNil(Erik.title)
                 visitExpectation.fulfill()
                 
@@ -75,13 +75,13 @@ class ErikTests: XCTestCase {
         let submitExpectation = self.expectation(description: "submit")
         let currentContentExpectation = self.expectation(description: "currentContent")
 
-        Erik.visit(url: url) { (obj, err) -> Void in
-            if let error = err {
+        Erik.visit(url: url) { (result) -> Void in
+            if let error = result.error {
                 print(error)
                 
                 XCTFail("\(error)")
             }
-            else if let docVisit = obj {
+            else if let docVisit = result.document {
                 visitExpectation.fulfill()
                 
                 //print(doc)
@@ -93,12 +93,12 @@ class ErikTests: XCTestCase {
                     let value: String? = "test"
                     input["value"] = value
                     
-                    Erik.currentContent { (obj, err) -> Void in
-                        if let error = err {
+                    Erik.currentContent { (result) -> Void in
+                        if let error = result.error {
                             print(error)
                             XCTFail("\(error)")
                         }
-                        else if let doc = obj {
+                        else if let doc = result.document {
                             if let input2 = doc.querySelector(inputSelector) {
                                 print(input2)
                                 let currentValue = input2["value"]
@@ -115,12 +115,12 @@ class ErikTests: XCTestCase {
                                 
                                 form.submit()
                                 
-                                Erik.currentContent { (obj, err) -> Void in
-                                    if let error = err {
+                                Erik.currentContent { (result) -> Void in
+                                    if let error = result.error {
                                         print(error)
                                         XCTFail("\(error)")
                                     }
-                                    else if let docSubmit = obj {
+                                    else if let docSubmit = result.document {
                                         print(docSubmit)
                                         currentContentExpectation.fulfill()
                                         
@@ -159,11 +159,11 @@ class ErikTests: XCTestCase {
     func testJavascriptError() {
         let visitExpectation = self.expectation(description: "visit")
         
-        Erik.visit(url: url) { (obj, err) -> Void in
-            if let error = err {
+        Erik.visit(url: url) { (result) -> Void in
+            if let error = result.error {
                 XCTFail("\(error)")
             }
-            else if let _ = obj {
+            else if let _ = result.document {
                 Erik.evaluate(javaScript: "zae;azeaze") { (obj, err) -> Void in
                     if let error = err {
                         switch error {
@@ -191,11 +191,11 @@ class ErikTests: XCTestCase {
         let visitExpectation = self.expectation(description: "visit")
 
         
-        Erik.visit(url: url) { (obj, err) -> Void in
-            if let error = err {
+        Erik.visit(url: url) { (result) -> Void in
+            if let error = result.error {
                 XCTFail("\(error)")
             }
-            else if let _ = obj {
+            else if let _ = result.document {
                 let source = "var resultErik = 1 + 1; 3 + 5;"
                 Erik.evaluate(javaScript: source) { (obj, err) -> Void in
                     if let error = err {
@@ -226,11 +226,11 @@ class ErikTests: XCTestCase {
             engine.javaScriptWaitTime = 1
         }
         
-        Erik.visit(url: url) { (obj, err) -> Void in
-            if let error = err {
+        Erik.visit(url: url) { (result) -> Void in
+            if let error = result.error {
                 XCTFail("\(error)")
             }
-            else if let _ = obj {
+            else if let _ = result.document {
                 var source = "function sleep(milliseconds) {"
                 source +=      "var start = new Date().getTime();"
                 source +=      "for (var i = 0; i < 1e7; i++) {"
@@ -274,11 +274,11 @@ class ErikTests: XCTestCase {
         let engine = Erik.sharedInstance.layoutEngine as? WebKitLayoutEngine
         engine?.pageLoadedPolicy = PageLoadedPolicy
         browser.noContentPattern = nil
-        browser.currentContent {(obj, err) -> Void in
-            if let _ = obj {
+        browser.currentContent {(result) -> Void in
+            if let _ = result.document {
                 expectation.fulfill() // there is content
             }
-            else if let error = err {
+            else if let error = result.error {
                 XCTFail("\(error)")
             }
         }
@@ -293,12 +293,12 @@ class ErikTests: XCTestCase {
         let browser = Erik()
         let engine = Erik.sharedInstance.layoutEngine as? WebKitLayoutEngine
         engine?.pageLoadedPolicy = PageLoadedPolicy
-        browser.currentContent {(obj, err) -> Void in
+        browser.currentContent {(result) -> Void in
 
-            if let _ = obj {
+            if let _ = result.document {
                 XCTFail("Must have no content")
             }
-            else if let error = err {
+            else if let error = result.error {
                 switch error {
                 case ErikError.noContent:
                     expectation.fulfill()
@@ -388,13 +388,13 @@ class ErikTests: XCTestCase {
 
         let _ = future.andThen { result in
             
-            Erik.visit(url: url) { (obj, err) -> Void in
-                if let error = err {
+            Erik.visit(url: url) { (result) -> Void in
+                if let error = result.error {
                     print(error)
                     
                     XCTFail("\(error)")
                 }
-                else if let _ = obj {
+                else if let _ = result.document {
                     XCTAssertNotNil(Erik.title)
                     visitExpectation.fulfill()
                     
